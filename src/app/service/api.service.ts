@@ -16,9 +16,10 @@ export class ApiService {
   }
 
   public getJHLPR(): Observable<any>{
-    return this.firestore.getDT1('vehicleType', 'helper_fare');
+    return this.firestore.getDT1('helper', 'helper');
   }
   
+
   
 
 }

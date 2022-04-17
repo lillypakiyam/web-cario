@@ -91,7 +91,8 @@ searchdrop:any
   }
 
   async GetEstimate(){
-   const dist = await this.getETA();
+   const { dist, eta } = await this.getETA();
+   console.log('etamin', eta);
    this.api.getData().pipe(takeUntil(this.unSubscribe$)).subscribe(data => {
     console.log(data);
     const vehicles1 =data.find((dat:any) => dat.id === 'tata_ace');
@@ -103,11 +104,23 @@ searchdrop:any
       const hlpr = rsfare;
       this.tripFare.fare1 = this.fareCalculator(vehicles1, dist);
       this.tripFare.fare2 = this.fareCalculator(vehicles2, dist);
-      this.tripFare.fare3 = this.tripFare.fare1 + parseInt(hlpr[vehicles1.id]);
-      this.tripFare.fare4 = this.tripFare.fare2 + parseInt(hlpr[vehicles2.id]);     
+      this.tripFare.fare3 = this.tripFare.fare1 + this.calculateHLPFr(hlpr, eta);
+      this.tripFare.fare4 = this.tripFare.fare2 + this.calculateHLPFr(hlpr, eta);     
       console.log(this.tripFare);
     })
    });
+  }
+
+  calculateHLPFr(hlp:any,eta:any){
+    let hlpFare = 0;
+    if(eta <= 60){
+      hlpFare = parseInt(hlp.basefare);
+      console.log(hlpFare);
+    }else{
+      let i = parseInt(eta) + parseInt(hlp.free_wait);
+      hlpFare = i * parseInt(hlp.extra_fare);
+    }
+    return hlpFare;
   }
 
   async getGooglePlaceAutoCompleteList(searchText:any) {
@@ -196,7 +209,7 @@ searchdrop:any
    }
  
    getpicAddress(address:any){
-     this.searchText=address
+     this.searchText=address;
      console.log('address',this.searchText)
      const geocode= this.getLatLan(address).subscribe((geocoder:any) =>{
        console.log('code',geocoder)
@@ -227,7 +240,7 @@ searchdrop:any
  
    //discalcu
    async getETA(){
-     var eta;
+     let eta:any, dist:any;
      // console.log(this.rideInfo);
      let google =( window as {[google: string]: any })['google']
      const destination = new google.maps.LatLng(this.pickup_lat, this.pickup_lng);
@@ -241,35 +254,36 @@ searchdrop:any
       };
       await new Promise((resolve, rejected) => {
        service.getDistanceMatrix(request, (result:any, status:any) => {
-         console.log(result);
+         //console.log(result);
          if(status === "OK"){
            console.log(result);
-           eta = Math.round(result.rows[0].elements[0].distance.value / 1000);
+           dist = Math.round(result.rows[0].elements[0].distance.value / 1000);
+           eta = Math.round(result.rows[0].elements[0].duration.value / 60);
+           console.log(result.rows[0].elements[0].duration.text);
            resolve(true);
-           console.log('eta',eta);
+           //console.log('eta',eta);
          }else{
            console.log('Error Occurred');
            resolve(false);
          }
        }); 
       });
-      return eta;
+      return { dist, eta };
    }
  
    fareCalculator(transport:any, trip_distance:any){
     let vat:any , extras:any, initial_fare:any;
      const base_fare = transport.baseFare;
-     const fixed_dist = parseInt(transport.fixedDistance).toFixed(1);
+     const fixed_dist = transport.fixedDistance;
      if((trip_distance > 0) && (parseFloat(trip_distance) <= parseInt(fixed_dist))){
-      vat = Number((parseInt(base_fare) / 100) * parseInt(transport.vat)).toFixed(2);
-      initial_fare = Math.round(parseInt(base_fare) + parseInt(vat) + parseInt(transport.serviceFee));        
+      initial_fare = Math.round(parseInt(base_fare));        
+      console.log('1',base_fare, fixed_dist, initial_fare)
      }else if(parseFloat(trip_distance) === 0){
-      vat = Number((parseInt(base_fare) / 100) * parseInt(transport.vat)).toFixed(2);
-      initial_fare = Math.round(parseInt(base_fare) + parseInt(vat) + parseInt(transport.serviceFee)); 
+      initial_fare = Math.round(parseInt(base_fare)); 
+      console.log('2',base_fare, fixed_dist, initial_fare)
      }else {
-      extras = Math.round(((parseFloat(trip_distance) - parseInt(fixed_dist)) * parseInt(transport.farePerKm)))+ parseInt(base_fare); 
-      vat = Number((parseInt(extras) / 100) * parseInt(transport.vat)).toFixed(2); 
-      initial_fare =  Math.round(parseInt(extras) + parseInt(vat) + parseInt(transport.serviceFee));
+      extras = Math.round(((parseFloat(trip_distance) - parseInt(fixed_dist)) * parseInt(transport.farePerKm)))+ parseInt(base_fare);  
+      initial_fare =  Math.round(parseInt(extras));
       }
        return initial_fare;
    }

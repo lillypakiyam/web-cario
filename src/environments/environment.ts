@@ -6,13 +6,13 @@ export const environment = {
   production: false,
   COUNTRY:'LUX',
   config: {
-    apiKey: "AIzaSyDH9ZPYWE-hh6WIpaMahvB9WfPMcM_2Pd0",
-    authDomain: "team-carrio.firebaseapp.com",
-    projectId: "team-carrio",
-    storageBucket: "team-carrio.appspot.com",
-    messagingSenderId: "1052580401514",
-    appId: "1:1052580401514:web:591e9dee6de1700cba1513",
-    measurementId: "G-D68EWFJ8EY"
+    apiKey: "AIzaSyDXJJVThNYT9aWBzDnbBf5JmThvSNp3VOQ",
+    authDomain: "mycarrio-aed0f.firebaseapp.com",
+    projectId: "mycarrio-aed0f",
+    storageBucket: "mycarrio-aed0f.appspot.com",
+    messagingSenderId: "760820028583",
+    appId: "1:760820028583:web:4027a2098b779b8ee13782",
+    measurementId: "G-1ZYK8SJLQD"
   },
 };
 
